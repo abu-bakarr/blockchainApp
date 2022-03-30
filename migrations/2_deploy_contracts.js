@@ -7,7 +7,8 @@ module.exports = async function(deployer) {
     await deployer.deploy(Token);
     const token = await Token.deployed();
 
-    await deployer.deploy(EthExchange);
+    // passing token.address to EthExchnage contract coz of the imported token
+    await deployer.deploy(EthExchange, token.address);
     const ethExchange = await EthExchange.deployed();
 
 
