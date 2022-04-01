@@ -51,9 +51,9 @@ class App extends Component {
       console.log(" Token=", token); 
       // get Token Balance
       // let tokenBalance = await token.methods.balanceOf(this.state.account).call()
-      let tokenBalance = await token.methods.balanceOf(this.state.account).call()
+      let tokenBalance = await token.methods.balanceOf(this.state.account.toString()).call()
       this.setState({tokenBalance: tokenBalance})
-      console.log("Token Balance", await token.methods.balanceOf(this.state.account).call());
+      console.log("Token Balance", await token.methods.balanceOf(this.state.account.toString()).call());
     }else{
       window.alert("Token Contract not deployed to netwrok")
     }
