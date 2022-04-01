@@ -8,6 +8,17 @@ import EthExchange from '../abis/EthExchange.json'
 import Token from '../abis/Token.json'
 class App extends Component {
 
+  constructor(props){
+    super(props)
+      this.state = {
+        account: '',
+        ethBalance: '0',
+        tokenBalance: '0',
+        token: {},
+        ethExchange: {},
+        loading: true,
+      }
+  }
 
 
   async componentWillMount() {
@@ -16,28 +27,33 @@ class App extends Component {
   }
 
   async loadBalance(){
-    const web3 = window.web3
-    const accounts = await web3.eth.getAccounts()
+   
+    const myWeb3 = await new Web3(window.ethereum);
+
+    const accounts = await myWeb3.eth.getAccounts()
     this.setState({account: accounts[0]})
-    console.log("accounts ", accounts);
-    const ethBalance = await web3.eth.getBalance(this.state.account)
-    this.setState({ethBalance: ethBalance.toString()})
-    console.log("ethBalance ", ethBalance.toString());
+    console.log("accounts ", accounts[0]);
+    // const ethBalance = await myWeb3.eth.getBalance(this.state.account)
+    const ethBalance = await new myWeb3.eth.getBalance(this.state.account.toString())
+    this.setState({ethBalance: ethBalance})
+    console.log("ethBalance ", ethBalance);
 
     //          Load Token
     // dynamicall get network ID
-    const networkId = await web3.eth.net.getId()
+    const networkId = await new myWeb3.eth.net.getId()
     // check if TokenData exists 
-    const tokenData = Token.networks[networkId]
+    const tokenData = await Token.networks[networkId]
+    console.log("tokenData here", tokenData); 
     if(tokenData){
       // get ABi Token Contract and Token Address from Abi File
-      let token = new web3.eth.Contract(Token.abi, tokenData.address);
-      this.setState({token})
-      console.log("Token here", this.state.token); 
+      let token = await new myWeb3.eth.Contract(Token.abi, tokenData.address);
+      this.setState({token});
+      console.log(" Token=", token); 
       // get Token Balance
+      // let tokenBalance = await token.methods.balanceOf(this.state.account).call()
       let tokenBalance = await token.methods.balanceOf(this.state.account).call()
-      this.setState({tokenBalance: tokenBalance.toString()})
-      console.log("Token Balance", tokenBalance.toString());
+      this.setState({tokenBalance: tokenBalance})
+      console.log("Token Balance", await token.methods.balanceOf(this.state.account).call());
     }else{
       window.alert("Token Contract not deployed to netwrok")
     }
@@ -45,12 +61,12 @@ class App extends Component {
         //          Load Token
     // check if EthExchangeData exists 
     const EthExchangeData = EthExchange.networks[networkId]
-     // check if EthExchangeData exists
+    // check if EthExchangeData exists
     if(EthExchangeData){
       // get ABi EthExchange Contract and Token Address from Abi File
-      let ethExchange = new web3.eth.Contract(EthExchange.abi, EthExchangeData.address);
+      let ethExchange = await new myWeb3.eth.Contract(EthExchange.abi, EthExchangeData.address);
       this.setState({ethExchange})
-      console.log("ethExchange here", this.state.ethExchange); 
+      console.log("ethExchange here", ethExchange); 
     }else{
       window.alert("Token Contract not deployed to netwrok")
     }
@@ -59,12 +75,10 @@ class App extends Component {
   }
 
   async loadWeb3() {
-    if (window.ethereum) {
+    const { ethereum } = window;
+    if (ethereum && ethereum.isMetaMask) {
       window.web3 = new Web3(window.ethereum)
       await window.ethereum.eth_requestAccounts
-    }
-    else if (window.web3) {
-      window.web3 = new Web3(window.ethereum)
     }
     else {
       window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
@@ -92,17 +106,7 @@ sellTokens =  (tokenAmount) => {
         })
 }
 
-constructor(props){
-  super(props)
-    this.state = {
-      account: '',
-      ethBalance: '0',
-      tokenBalance: '0',
-      token: {},
-      ethExchange: {},
-      loading: true,
-    }
-}
+
 
   render() {
       let content = "";
